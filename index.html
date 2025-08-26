@@ -23,8 +23,16 @@
                         <!-- File Upload -->
                         <div class="mb-4">
                             <label for="video-file" class="form-label">Upload Video File</label>
-                            <input type="file" class="form-control" id="video-file" accept="video/*">
-                            <div class="form-text">Select a video file (MP4, WebM, etc.) up to 10 minutes long.</div>
+                            <input type="file" class="form-control mb-2" id="video-file" accept="video/*">
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-outline-primary" id="load-sample-video">
+                                    <i class="bi bi-play-circle me-2"></i>Load Sample Video
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" id="clear-video">
+                                    <i class="bi bi-x-circle me-2"></i>Clear Video
+                                </button>
+                            </div>
+                            <div class="form-text">Select a video file (MP4, WebM, etc.) up to 10 minutes long, or use the sample video.</div>
                         </div>
 
                         <!-- Video Player -->

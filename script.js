@@ -35,6 +35,8 @@ class SubtitleGenerator {
         this.generationControls = document.getElementById('generation-controls');
         
         // Buttons
+        this.loadSampleBtn = document.getElementById('load-sample-video');
+        this.clearVideoBtn = document.getElementById('clear-video');
         this.generateBtn = document.getElementById('generate-subtitles');
         this.downloadVttBtn = document.getElementById('download-vtt');
         this.downloadSrtBtn = document.getElementById('download-srt');
@@ -70,6 +72,8 @@ class SubtitleGenerator {
 
     bindEvents() {
         this.videoFileInput.addEventListener('change', (e) => this.handleFileUpload(e));
+        this.loadSampleBtn.addEventListener('click', () => this.loadSampleVideo());
+        this.clearVideoBtn.addEventListener('click', () => this.clearVideo());
         this.generateBtn.addEventListener('click', () => this.generateSubtitles());
         this.downloadVttBtn.addEventListener('click', () => this.downloadSubtitles('vtt'));
         this.downloadSrtBtn.addEventListener('click', () => this.downloadSubtitles('srt'));
@@ -162,6 +166,42 @@ class SubtitleGenerator {
         this.videoFile = file;
         this.displayVideo();
         this.clearSubtitles();
+    }
+
+    async loadSampleVideo() {
+        try {
+            this.loadSampleBtn.disabled = true;
+            this.loadSampleBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Loading...';
+            
+            const response = await fetch('samples/Prompting_Not_GPTing_Ideas.mp4');
+            
+            if (!response.ok) {
+                throw new Error(`Failed to load sample video: ${response.status} ${response.statusText}`);
+            }
+            
+            const blob = await response.blob();
+            this.videoFile = new File([blob], 'sample-video.mp4', { type: 'video/mp4' });
+            
+            this.displayVideo();
+            this.clearSubtitles();
+            this.showSuccess('Sample video loaded successfully!');
+            
+        } catch (error) {
+            this.showError(`Failed to load sample video: ${error.message}`);
+        } finally {
+            this.loadSampleBtn.disabled = false;
+            this.loadSampleBtn.innerHTML = '<i class="bi bi-play-circle me-2"></i>Load Sample Video';
+        }
+    }
+
+    clearVideo() {
+        this.videoFile = null;
+        this.videoFileInput.value = '';
+        this.videoContainer.style.display = 'none';
+        this.generationControls.style.display = 'none';
+        this.clearSubtitles();
+        this.hideAlerts();
+        this.showSuccess('Video cleared successfully');
     }
 
     displayVideo() {
