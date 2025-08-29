@@ -466,7 +466,7 @@ TRANSCRIPTION REQUIREMENTS:
 3. If speech is unclear or inaudible, use [inaudible] rather than guessing
 4. If there's no speech in a time period, include relevant sound effects only
 5. Always include background music, sound effects, and other non-speech audio cues in square brackets - whatever is happening in the background, transcribe it -along with the speech. 
-6. Never Miss the speech and the background audio. Transcription should be there for the entire video. Always show the Music, Sound Effects, and other non-speech audio cues. It should be understandable by deaf people.
+6. Never Miss the speech and the background audio. Transcription should be there for the entire video. Always show the Music, Sound Effects, and other non-speech audio cues. Never miss the music and sound effects. It should be understandable by deaf people.
 
 Output strictly in valid WebVTT format (start with WEBVTT).
 
