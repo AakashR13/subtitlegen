@@ -14,7 +14,7 @@ class SubtitleGenerator {
             apiToken: '',
             baseUrl: 'https://llmfoundry.straive.com/gemini/v1beta',
             projectId: 'my-test-project',
-            model: 'gemini-2.0-flash'
+            model: 'gemini-2.5-pro'
         };
         
         this.init();
@@ -465,9 +465,8 @@ TRANSCRIPTION REQUIREMENTS:
 2. Listen carefully to identify who is speaking and what they actually say
 3. If speech is unclear or inaudible, use [inaudible] rather than guessing
 4. If there's no speech in a time period, include relevant sound effects only
-5. Always include background music, sound effects, and other non-speech audio cues in square brackets - whatever is happening in the background, transcribe it.
-
-OUTPUT FORMAT:
+5. Always include background music, sound effects, and other non-speech audio cues in square brackets - whatever is happening in the background, transcribe it -along with the speech. 
+6. Never Miss the speech and the background audio. Transcription should be there for the entire video.
 
 Output strictly in valid WebVTT format (start with WEBVTT).
 
@@ -479,11 +478,11 @@ Include important non-speech audio cues in square brackets: [Music playing], [Do
 
 Keep lines under ${settings.maxCharsPerLine} characters; aim reading speed under ${settings.readingSpeed} chars/sec.
 
-Prefer 1–2 lines per cue. Avoid overlapping cues unless necessary.
+Prefer 1-2 lines per cue. Avoid overlapping cues unless necessary.
 
 Merge micro-pauses if they hurt readability.
 
-For each cue, provide 3–4 alternative phrasings of the SAME content (not different content). Return alternatives as JSON.
+For each cue, provide 3-4 alternative phrasings of the SAME content (not different content). Return alternatives as JSON.
 
 TIMING REQUIREMENTS:
 
