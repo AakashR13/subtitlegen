@@ -465,6 +465,7 @@ TRANSCRIPTION REQUIREMENTS:
 2. Listen carefully to identify who is speaking and what they actually say
 3. If speech is unclear or inaudible, use [inaudible] rather than guessing
 4. If there's no speech in a time period, include relevant sound effects only
+5. Always include background music, sound effects, and other non-speech audio cues in square brackets - whatever is happening in the background, transcribe it.
 
 OUTPUT FORMAT:
 
