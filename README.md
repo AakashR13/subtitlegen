@@ -115,4 +115,4 @@ The app uses Bootstrap 5 for styling and requires no build process.
 
 ## License
 
-This project is for demonstration purposes. Ensure compliance with your API provider's terms of service.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
