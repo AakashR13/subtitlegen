@@ -6,118 +6,214 @@
     <title>Subtitle Generator - Gemini AI</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .upload-area {
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .upload-area:hover {
+            border-color: #0d6efd;
+            background-color: #f8f9fa;
+        }
+        .upload-area.dragover {
+            border-color: #0d6efd;
+            background-color: #f8f9fa;
+        }
+        .video-preview {
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .video-container {
+            position: sticky;
+            top: 20px;
+        }
+        .subtitle-cue {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .subtitle-cue:hover {
+            background-color: #f8f9fa;
+        }
+        .subtitle-cue.active {
+            background-color: #e3f2fd;
+            border-left: 4px solid #2196f3;
+        }
+        .view {
+            display: none;
+        }
+        .view.active {
+            display: block;
+        }
+        
+        /* Results view height management */
+        #results-view .container-fluid {
+            max-height: calc(100vh - 80px); /* Account for navbar */
+            overflow-y: auto;
+        }
+        
+        .video-container {
+            position: sticky;
+            top: 20px;
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
+        }
+    </style>
 </head>
 <body class="bg-light">
-    <div class="container-fluid py-4">
-        <div class="row">
-            <!-- Main Content -->
-            <div class="col-lg-8">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                        <h1 class="h4 mb-0"><i class="bi bi-camera-video me-2"></i>Subtitle Generator</h1>
-                        <button type="button" class="btn btn-outline-light btn-sm" data-bs-toggle="modal" data-bs-target="#settings-modal">
-                            <i class="bi bi-gear me-1"></i>Settings
-                        </button>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-camera-video me-2"></i>AI Subtitle Generator
+            </a>
+            <div class="navbar-nav ms-auto">
+                <button type="button" class="btn btn-outline-light" data-bs-toggle="modal" data-bs-target="#settings-modal">
+                    <i class="bi bi-gear me-2"></i>Settings
+                </button>
+            </div>
+        </div>
+    </nav>
+    <!-- Landing View -->
+    <div id="landing-view" class="view active">
+        <div class="container py-3">
+            <div class="row justify-content-center">
+                <div class="col-lg-8 col-xl-7">
+                    <div class="card shadow-lg border-0">
+                                                                                         <div class="card-header bg-white border-0 text-center py-3">
+                        <h2 class="h4 mb-0 text-primary">Get Started</h2>
+                        <p class="text-muted mb-0">Transform your videos with accurate, AI-generated subtitles</p>
                     </div>
-                    <div class="card-body">
-                        <!-- File Upload -->
-                        <div class="mb-4">
-                            <label for="video-file" class="form-label">Upload Video File</label>
-                            <input type="file" class="form-control mb-2" id="video-file" accept="video/*">
-                            <div class="d-flex gap-2">
-                                <button type="button" class="btn btn-outline-primary" id="load-sample-video">
-                                    <i class="bi bi-play-circle me-2"></i>Load Sample Video
-                                </button>
-                                <button type="button" class="btn btn-outline-secondary" id="clear-video">
-                                    <i class="bi bi-x-circle me-2"></i>Clear Video
-                                </button>
+                        <div class="card-body p-4">
+                            <!-- File Upload Section -->
+                            <div class="mb-4">
+                                <h5 class="mb-3">
+                                    <i class="bi bi-cloud-upload text-primary me-2"></i>Upload Video
+                                </h5>
+                                
+                                <!-- Video Upload/Preview -->
+                                <div class="position-relative">
+                                    <!-- Upload Area (shown when no video) -->
+                                    <div class="upload-area mb-3" id="upload-area" style="padding: 1.5rem;">
+                                        <div class="row align-items-center">
+                                            <div class="col-8">
+                                                <h6 class="mb-1">Upload Video File</h6>
+                                                <p class="text-muted mb-0 small">Drag & drop or click to browse</p>
+                                            </div>
+                                            <div class="col-4 text-end">
+                                                <i class="bi bi-cloud-upload display-6 text-primary"></i>
+                                            </div>
+                                        </div>
+                                        <input type="file" class="form-control d-none" id="video-file" accept="video/*">
+                                    </div>
+
+                                    <!-- Video Preview (shown when video loaded) -->
+                                    <div id="video-preview" style="display: none;">
+                                        <div class="video-preview mb-2">
+                                            <video id="video-player-landing" class="w-100" controls style="max-height: 180px;">
+                                                Your browser does not support the video tag.
+                                            </video>
+                                        </div>
+                                        <div class="alert alert-success py-2">
+                                            <i class="bi bi-check-circle me-2"></i>
+                                            <strong>Video ready!</strong> Adjust settings below and generate.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="d-flex gap-2 mb-3">
+                                    <button type="button" class="btn btn-outline-primary flex-fill" id="choose-file-btn">
+                                        <i class="bi bi-folder2-open me-2"></i>Browse Files
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary flex-fill" id="load-sample-video">
+                                        <i class="bi bi-play-circle me-2"></i>Load Sample
+                                    </button>
+                                    <button type="button" class="btn btn-outline-danger flex-fill" id="clear-video">
+                                        <i class="bi bi-trash me-2"></i>Clear
+                                    </button>
+                                </div>
+
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Supported formats: MP4, WebM, AVI, MOV (up to 10 minutes)
+                                </div>
                             </div>
-                            <div class="form-text">Select a video file (MP4, WebM, etc.) up to 10 minutes long, or use the sample video.</div>
-                        </div>
 
-                        <!-- Video Player -->
-                        <div class="mb-4" id="video-container" style="display: none;">
-                            <video id="video-player" class="w-100" controls style="max-height: 400px;">
-                                Your browser does not support the video tag.
-                            </video>
-                        </div>
+                            <!-- Quality Settings -->
+                            <div class="mb-4">
+                                <h5 class="mb-3">
+                                    <i class="bi bi-sliders text-primary me-2"></i>Quality Settings
+                                </h5>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="max-chars-line" class="form-label d-flex justify-content-between">
+                                            <span>Max Characters per Line</span>
+                                            <span class="badge bg-primary" id="max-chars-value">42</span>
+                                        </label>
+                                        <input type="range" class="form-range" id="max-chars-line" min="20" max="80" value="42">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="reading-speed" class="form-label d-flex justify-content-between">
+                                            <span>Reading Speed (chars/sec)</span>
+                                            <span class="badge bg-primary" id="reading-speed-value">15</span>
+                                        </label>
+                                        <input type="range" class="form-range" id="reading-speed" min="8" max="25" value="15">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="min-duration" class="form-label d-flex justify-content-between">
+                                            <span>Min Cue Duration (ms)</span>
+                                            <span class="badge bg-primary" id="min-duration-value">800</span>
+                                        </label>
+                                        <input type="range" class="form-range" id="min-duration" min="500" max="2000" value="800">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="max-duration" class="form-label d-flex justify-content-between">
+                                            <span>Max Cue Duration (ms)</span>
+                                            <span class="badge bg-primary" id="max-duration-value">6000</span>
+                                        </label>
+                                        <input type="range" class="form-range" id="max-duration" min="3000" max="10000" value="6000">
+                                    </div>
+                                </div>
+                            </div>
 
-                        <!-- Generation Controls -->
-                        <div class="mb-4" id="generation-controls" style="display: none;">
-                            <div class="d-flex gap-2 flex-wrap">
-                                <button class="btn btn-success" id="generate-subtitles">
+                            <!-- Generate Button -->
+                            <div class="text-center mt-3">
+                                <button class="btn btn-success btn-lg px-5" id="generate-subtitles" disabled>
                                     <i class="bi bi-magic me-2"></i>Generate Subtitles
                                 </button>
-                                <button class="btn btn-outline-primary" id="download-vtt" disabled>
-                                    <i class="bi bi-download me-2"></i>Download VTT
-                                </button>
-                                <button class="btn btn-outline-secondary" id="download-srt" disabled>
-                                    <i class="bi bi-download me-2"></i>Download SRT
-                                </button>
+                                <div class="form-text mt-2">
+                                    Make sure to configure your API settings before generating
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- Progress -->
-                        <div class="mb-4" id="progress-container" style="display: none;">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="text-muted">Generating subtitles...</span>
-                                <span class="badge bg-primary" id="progress-text">0%</span>
+                            <!-- Progress Section -->
+                            <div class="mt-4" id="progress-container" style="display: none;">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-muted">Generating subtitles...</span>
+                                    <span class="badge bg-primary" id="progress-text">0%</span>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                         id="progress-bar" role="progressbar" style="width: 0%"></div>
+                                </div>
                             </div>
-                            <div class="progress">
-                                <div class="progress-bar" id="progress-bar" role="progressbar" style="width: 0%"></div>
+
+                            <!-- Error Display -->
+                            <div class="alert alert-danger mt-4" id="error-display" style="display: none;" role="alert">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                <span id="error-message"></span>
                             </div>
-                        </div>
 
-                        <!-- Error Display -->
-                        <div class="alert alert-danger" id="error-display" style="display: none;" role="alert">
-                            <i class="bi bi-exclamation-triangle me-2"></i>
-                            <span id="error-message"></span>
-                        </div>
-
-                        <!-- Success Display -->
-                        <div class="alert alert-success" id="success-display" style="display: none;" role="alert">
-                            <i class="bi bi-check-circle me-2"></i>
-                            <span id="success-message"></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Sidebar -->
-            <div class="col-lg-4">
-                <!-- Quality Settings -->
-                <div class="card shadow-sm mb-4">
-                    <div class="card-header">
-                        <h5 class="mb-0"><i class="bi bi-sliders me-2"></i>Quality Settings</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <label for="max-chars-line" class="form-label">Max Characters per Line: <span id="max-chars-value">42</span></label>
-                            <input type="range" class="form-range" id="max-chars-line" min="20" max="80" value="42">
-                        </div>
-                        <div class="mb-3">
-                            <label for="reading-speed" class="form-label">Reading Speed (chars/sec): <span id="reading-speed-value">15</span></label>
-                            <input type="range" class="form-range" id="reading-speed" min="8" max="25" value="15">
-                        </div>
-                        <div class="mb-3">
-                            <label for="min-duration" class="form-label">Min Cue Duration (ms): <span id="min-duration-value">800</span></label>
-                            <input type="range" class="form-range" id="min-duration" min="500" max="2000" value="800">
-                        </div>
-                        <div class="mb-3">
-                            <label for="max-duration" class="form-label">Max Cue Duration (ms): <span id="max-duration-value">6000</span></label>
-                            <input type="range" class="form-range" id="max-duration" min="3000" max="10000" value="6000">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Subtitle Editor -->
-                <div class="card shadow-sm" id="subtitle-editor" style="display: none;">
-                    <div class="card-header">
-                        <h5 class="mb-0"><i class="bi bi-pencil me-2"></i>Subtitle Editor</h5>
-                    </div>
-                    <div class="card-body">
-                        <div id="cue-list" class="list-group list-group-flush">
-                            <!-- Cues will be populated here -->
+                            <!-- Success Display -->
+                            <div class="alert alert-success mt-4" id="success-display" style="display: none;" role="alert">
+                                <i class="bi bi-check-circle me-2"></i>
+                                <span id="success-message"></span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -125,29 +221,202 @@
         </div>
     </div>
 
-    <!-- Alternative Options Modal -->
-    <div class="modal fade" id="alternatives-modal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Choose Alternative Phrasing</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Current Text:</label>
-                        <div class="p-2 bg-light rounded" id="current-cue-text"></div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Alternative Options:</label>
-                        <div id="alternative-options">
-                            <!-- Options will be populated here -->
+    <!-- Results View -->
+    <div id="results-view" class="view">
+        <div class="container-fluid py-4">
+            <div class="row">
+                <!-- Video Player Section -->
+                <div class="col-lg-7">
+                    <div class="video-container">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                                <h1 class="h5 mb-0">
+                                    <i class="bi bi-camera-video me-2"></i>Video Player
+                                </h1>
+                                <div class="btn-group btn-group-sm">
+                                    <button type="button" class="btn btn-outline-light" id="toggle-subtitles">
+                                        <i class="bi bi-eye me-1"></i>Toggle Subtitles
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body p-0">
+                                <video id="video-player" class="w-100" controls>
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
+                        </div>
+
+                        <!-- Video Summary -->
+                        <div class="card shadow-sm mt-2">
+                            <div class="card-header py-2">
+                                <h6 class="mb-0 small">
+                                    <i class="bi bi-file-text me-2"></i>Video Summary
+                                </h6>
+                            </div>
+                            <div class="card-body py-2">
+                                <div id="video-summary">
+                                    <div class="text-center text-muted py-2">
+                                        <i class="bi bi-hourglass-split me-2"></i>
+                                        <small>Generating summary...</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Video Info -->
+                        <div class="card shadow-sm mt-2">
+                            <div class="card-body py-2">
+                                <div class="row text-center">
+                                    <div class="col-4">
+                                        <div class="h6 mb-0 text-primary" id="video-duration">--:--</div>
+                                        <small class="text-muted">Duration</small>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="h6 mb-0 text-success" id="subtitle-count">0</div>
+                                        <small class="text-muted">Subtitles</small>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="h6 mb-0 text-info" id="current-time">00:00</div>
+                                        <small class="text-muted">Current</small>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="apply-alternative">Apply Selection</button>
+
+                <!-- Subtitle Editor Section -->
+                <div class="col-lg-5 position-relative">
+                    <!-- Control Panel -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-gear me-2"></i>Controls
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- Download Options -->
+                            <div class="row g-2 mb-3">
+                                <div class="col-6">
+                                    <button class="btn btn-outline-primary w-100" id="download-vtt" disabled>
+                                        <i class="bi bi-filetype-txt me-2"></i>Download WebVTT
+                                    </button>
+                                </div>
+                                <div class="col-6">
+                                    <button class="btn btn-outline-secondary w-100" id="download-srt" disabled>
+                                        <i class="bi bi-filetype-txt me-2"></i>Download SRT
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Action Buttons -->
+                            <div class="d-grid mb-3">
+                                <button class="btn btn-success" id="regenerate-subtitles">
+                                    <i class="bi bi-arrow-clockwise me-2"></i>Regenerate Subtitles
+                                </button>
+                            </div>
+                            
+                            <!-- Back Button -->
+                            <div class="d-grid">
+                                <button class="btn btn-outline-primary" id="back-to-upload">
+                                    <i class="bi bi-arrow-left me-2"></i>Back to Upload
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card shadow-sm">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="bi bi-pencil me-2"></i>Subtitle Editor
+                            </h5>
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-outline-primary" id="search-subtitles">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" id="expand-all">
+                                    <i class="bi bi-arrows-expand"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Search Bar -->
+                        <div class="card-body border-bottom" id="search-container" style="display: none;">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="search-input" placeholder="Search subtitles...">
+                                <button class="btn btn-outline-secondary" type="button" id="clear-search">
+                                    <i class="bi bi-x"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="card-body p-0" style="max-height: 50vh; overflow-y: auto;">
+                            <div id="cue-list">
+                                <!-- Subtitle cues will be populated here -->
+                                <div class="text-center p-4 text-muted">
+                                    <i class="bi bi-hourglass-split display-4 mb-3"></i>
+                                    <p>Loading subtitles...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sliding Edit Panel -->
+                    <div id="edit-panel" class="position-absolute top-0 end-0 h-100 bg-white shadow-lg border-start" 
+                         style="width: 100%; transform: translateX(100%); transition: transform 0.3s ease-in-out; z-index: 1000; display: none;">
+                        <div class="d-flex flex-column h-100">
+                            <!-- Panel Header -->
+                            <div class="border-bottom p-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">
+                                        <i class="bi bi-pencil-square me-2"></i>Edit Subtitle
+                                    </h6>
+                                    <button type="button" class="btn-close" id="close-edit-panel" aria-label="Close"></button>
+                                </div>
+                            </div>
+                            
+                            <!-- Panel Content -->
+                            <div class="flex-grow-1 p-3 overflow-auto">
+                                <form id="edit-form">
+                                    <div class="mb-3">
+                                        <label for="panel-start-time" class="form-label">Start Time</label>
+                                        <input type="text" class="form-control" id="panel-start-time" placeholder="00:00:00.000">
+                                        <div class="form-text">Format: HH:MM:SS.mmm</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="panel-end-time" class="form-label">End Time</label>
+                                        <input type="text" class="form-control" id="panel-end-time" placeholder="00:00:00.000">
+                                        <div class="form-text">Format: HH:MM:SS.mmm</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="panel-text" class="form-label">Subtitle Text</label>
+                                        <textarea class="form-control" id="panel-text" rows="4" placeholder="Enter subtitle text..."></textarea>
+                                        <div class="form-text">Use line breaks for multiple lines</div>
+                                    </div>
+                                    
+                                    <!-- Preview -->
+                                    <div class="mb-3">
+                                        <label class="form-label">Preview</label>
+                                        <div class="p-2 bg-light rounded border" id="subtitle-preview">
+                                            <small class="text-muted">Preview will appear here...</small>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                            
+                            <!-- Panel Footer -->
+                            <div class="border-top p-3">
+                                <div class="d-flex gap-2">
+                                    <button type="button" class="btn btn-primary flex-fill" id="save-panel-edit">
+                                        <i class="bi bi-check-lg me-2"></i>Save Changes
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary" id="cancel-panel-edit">
+                                        <i class="bi bi-x-lg me-2"></i>Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -208,6 +477,102 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="button" class="btn btn-primary" id="save-settings">Save Settings</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alternative Options Modal -->
+    <div class="modal fade" id="alternatives-modal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Choose Alternative Phrasing</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Current Text:</label>
+                        <div class="p-2 bg-light rounded" id="current-cue-text"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Alternative Options:</label>
+                        <div id="alternative-options">
+                            <!-- Options will be populated here -->
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="apply-alternative">Apply Selection</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Subtitle Modal -->
+    <div class="modal fade" id="edit-modal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Subtitle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="edit-start-time" class="form-label">Start Time</label>
+                        <input type="text" class="form-control" id="edit-start-time" placeholder="00:00:00.000">
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-end-time" class="form-label">End Time</label>
+                        <input type="text" class="form-control" id="edit-end-time" placeholder="00:00:00.000">
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-text" class="form-label">Subtitle Text</label>
+                        <textarea class="form-control" id="edit-text" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="save-edit">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress Modal -->
+    <div class="modal fade" id="progress-modal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center p-4">
+                    <div class="mb-3">
+                        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                    <h5 id="progress-title">Generating Subtitles</h5>
+                    <p class="text-muted mb-3" id="progress-message">Please wait while we process your video...</p>
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                             id="modal-progress-bar" role="progressbar" style="width: 0%"></div>
+                    </div>
+                    <div class="mt-2">
+                        <small class="text-muted" id="modal-progress-text">0%</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Toast -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="success-toast" class="toast" role="alert">
+            <div class="toast-header">
+                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                <strong class="me-auto">Success</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body" id="toast-message">
+                <!-- Message will be set dynamically -->
             </div>
         </div>
     </div>
