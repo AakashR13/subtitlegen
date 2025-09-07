@@ -1039,17 +1039,17 @@ Remember: Your goal is ACCURATE TRANSCRIPTION of what is actually said in the vi
 
     createCueElement(cue, index) {
         const div = document.createElement('div');
-        div.className = 'list-group-item subtitle-cue';
+        div.className = 'list-group-item subtitle-cue px-4 py-3';
         
         const hasAlternatives = this.alternatives[`${cue.start}-${cue.end}`];
         
         div.innerHTML = `
             <div class="d-flex justify-content-between align-items-start">
-                <div class="flex-grow-1">
-                    <div class="fw-bold text-primary mb-1">${cue.start} → ${cue.end}</div>
-                    <div class="subtitle-text">${cue.text}</div>
+                <div class="flex-grow-1 px-2">
+                    <div class="fw-bold text-primary mb-2">${cue.start} → ${cue.end}</div>
+                    <div class="subtitle-text mt-1">${cue.text}</div>
                 </div>
-                <div class="btn-group-vertical btn-group-sm">
+                <div class="btn-group-vertical btn-group-sm ms-3">
                     <button class="btn btn-outline-primary btn-sm" onclick="app.seekToTime(${cue.startSeconds})" title="Play from here">
                         <i class="bi bi-play"></i>
                     </button>
